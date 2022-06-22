@@ -9,8 +9,8 @@ if KeepCtrljRunning
 }
 KeepCtrljRunning := true
 
-LoopsSinceUpgrade := 0
-ClickTimer := 0 
+IniRead, ClickTimer, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Timers, ClickTimer
+IniRead, LoopsSinceUpgrade, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Timers, LoopsSinceUpgrade
 
 IniRead, CursorCount, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Upgrades, CursorCount
 IniRead, GrandmaCount, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Upgrades, GrandmaCount
@@ -57,6 +57,9 @@ return
 
 
 SaveCounts:
+IniWrite, ClickTimer, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Timers, ClickTimer
+IniWrite, LoopsSinceUpgrade, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Timers, LoopsSinceUpgrade
+
 IniWrite, %CursorCount%, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Upgrades, CursorCount
 IniWrite, %GrandmaCount%, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Upgrades, GrandmaCount
 IniWrite, %FarmCount%, C:\Users\JoeKM\Desktop\Auto Hotkey Scripts\CookieBot\Upgrades.ini, Upgrades, FarmCount
