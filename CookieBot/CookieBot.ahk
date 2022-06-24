@@ -9,11 +9,15 @@ if KeepCtrljRunning
 }
 KeepCtrljRunning := true
 
+LoopVariable := 5               ;; Amount of loops before the next upgrade is forced
+TimerVariable := 300            ;; Duration of one loop, in seconds
+
 IniRead, ClickTimer, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, ClickTimer
 IniRead, LoopsSinceUpgrade, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, LoopsSinceUpgrade
 
 IniRead, CursorCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, CursorCount
 IniRead, GrandmaCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, GrandmaCount
+
 IniRead, FarmCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FarmCount
 IniRead, MineCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, MineCount
 IniRead, FactoryCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FactoryCount
@@ -47,7 +51,7 @@ AutoClick:
          {
             Click %WrathX%, %WrathY%
          }
-      Else if ClickTimer > 300                     ;; Every 5 mins start a buy cycle (should be 300)
+      Else if ClickTimer > %TimerVariable%          ; Defined up top
          {
             ClickTimer := 0 
             Goto, UpgradeStatus
@@ -86,29 +90,57 @@ Return
 UpgradeStatus:
 PixelGetColor, UpgradeStatusTop, 2455, 169   
 PixelGetColor, UpgradeStatusMid, 2455, 219
-PixelGetColor, UpgradeStatusBot, 2455, 269 
-If (UpgradeStatusTop = 0x6E93BB And UpgradeStatusMid = 0x6E93BB And UpgradeStatusBot = 0x6C8DB7)                 ;; Checks to see if special upgrades are unlocked
+PixelGetColor, UpgradeStatusMid2, 2455, 269 
+PixelGetColor, UpgradeStatusBot, 2455, 320
+If (UpgradeStatusTop = 0x6E93BB And UpgradeStatusMid = 0x6E93BB And UpgradeStatusMid2 = 0x6C8DB7 And UpgradeStatusBot = 0x6C8DB7)  ;; 3 rows     
    {
-      FirstUpgradeX := 2358                                                                                      ;; If they are move the position of standard upgrade
-      FirstUpgradeY := 223
-      FirstUpgradeColour := "0x0F2456"
+      FirstUpgradeX := 2358                                                                                      
+      FirstUpgradeY := 277
+      FirstUpgradeColour := "0x89B3D6"
+      Goto, ResearchUpgrades
+   }
+Else if (UpgradeStatusTop = 0x6E93BB And UpgradeStatusMid = 0x6E93BB And UpgradeStatusMid2 = 0x6C8DB7) ;; 2 rows
+   {
+      FirstUpgradeX := 2358                                                                                      
+      FirstUpgradeY := 225
+      FirstUpgradeColour := "0x8EB7D9"
       Goto, FirstUpgrade
    }
-Else
+Else ;; one row - don't think this is ever relevant after 1st ascension
    {
       FirstUpgradeX := 2358
-      FirstUpgradeY := 176
-      FirstUpgradeColour := "0x89AED3"
+      FirstUpgradeY := 320
+      FirstUpgradeColour := "0x89B3D6"
       Goto, FirstUpgrade
    }
 
+
+ResearchUpgrades:
+PixelGetColor, ResearchUpgrade, 2358, 225
+If ResearchUpgrade = 0x8EB7D9
+   {
+      ImageSearch, OneMindX, OneMindY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\OneMind.png
+      If OneMindX > 0
+         {
+            click 2358, 225
+            Sleep 10 
+            click 1272, 813
+            Goto, FirstUpgrade
+         }
+      Else
+         {
+            click 2358, 225
+            Goto, FirstUpgrade
+         }
+   }   
+Else Goto, FirstUpgrade  
 
 
 FirstUpgrade:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       PixelGetColor, FirstUpgrade, %FirstUpgradeX%, %FirstUpgradeY% 
       If FirstUpgrade = %FirstUpgradeColour%  
          {
@@ -117,30 +149,83 @@ Loop
          }
       Else                   
          {
-            If UpgradeBoughtThisLoop = 1                           ;;If an upgrade was bought this loop reset the counters and move on 
+            If UpgradeBoughtThisLoop = 1                               ;; If an upgrade was bought this loop reset the counters and move on 
                {
                 UpgradeBoughtThisLoop := 0                   
                 LoopsSinceUpgrade := 0
-                Goto, ChanceMaker
+                Goto, Idleverse
                }
             Else
                {
-                  LoopsSinceUpgrade := (LoopsSinceUpgrade+1)       ;; Counts loops since upgrade
-                  If LoopsSinceUpgrade > 5                         ;; If its been 5 loops (30 mins) since upgrade, interrupt buy cycle and keep clicking     
+                  LoopsSinceUpgrade := (LoopsSinceUpgrade+1)           ;; Counts loops since upgrade
+                  If LoopsSinceUpgrade > %LoopVariable%                ;; Defined up top     
                      {
                         Goto, AutoClick
                      }
-                  Else Goto, ChanceMaker                          ;; no upgrade this loop, but less than 5 loops, continue buy cycle
+                  Else Goto, Idleverse                         ;; no upgrade this loop, but less than 5 loops, continue buy cycle
                }
          }
    }
 
+Idleverse:
+Loop
+   {
+      Click 2347, 507, 0 
+      Sleep 10
+      ImageSearch, IdleverseX, IdleverseY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Idleverse.png
+      If not KeepCtrljRunning                      
+         {
+            Goto, SaveCounts
+         }
+      Else If IdleverseX > 0
+         {
+           Click %IdleverseX%, %IdleverseY%
+           IdleverseCount := (IdleverseCount+1)
+         }
+      Else Goto, JavaScriptConsole
+   }   
+
+JavaScriptConsole:
+Loop
+   {
+      Click 2347, 507, 0 
+      Sleep 10
+      ImageSearch, JavaScriptConsoleX, JavaScriptConsoleY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\JavaScriptConsole.png
+      If not KeepCtrljRunning                      
+         {
+            Goto, SaveCounts
+         }
+      Else If JavaScriptConsoleX > 0
+         {
+           Click %JavaScriptConsoleX%, %JavaScriptConsoleY%
+           JavaScriptConsoleCount := (JavaScriptConsoleCount+1)
+         }
+      Else Goto, FractalEngine
+   }
+
+FractalEngine:
+Loop
+   {
+      Click 2347, 507, 0 
+      Sleep 10
+      ImageSearch, FractalEngineX, FractalEngineY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\FractalEngine.png
+      If not KeepCtrljRunning                      
+         {
+            Goto, SaveCounts
+         }
+      Else If FractalEngineX > 0
+         {
+           Click %FractalEngineX%, %FractalEngineY%
+           FractalEngineCount := (FractalEngineCount+1)
+         }
+      Else Goto, ChanceMaker
+   }
 
 ChanceMaker:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, ChanceMakerX, ChanceMakerY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\ChanceMaker.png
       If not KeepCtrljRunning                      
          {
@@ -158,7 +243,7 @@ Prism:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, PrismX, PrismY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Prism.png
       If not KeepCtrljRunning                      
          {
@@ -176,7 +261,7 @@ AntiCondenser:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, AntiCondenserX, AntiCondenserY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\AntiCondenser.png
       If not KeepCtrljRunning                      
          {
@@ -194,7 +279,7 @@ TimeMachine:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, TimeMachineX, TimeMachineY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\TimeMachine.png
       If not KeepCtrljRunning                      
          {
@@ -212,7 +297,7 @@ Portal:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, PortalX, PortalY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Portal.png
       If not KeepCtrljRunning                      
          {
@@ -230,7 +315,7 @@ AlchemyLab:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, AlchemyLabX, AlchemyLabY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\AlchemyLab.png
       If not KeepCtrljRunning                      
          {
@@ -248,7 +333,7 @@ Shipment:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, ShipmentX, ShipmentY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Shipment.png
       If not KeepCtrljRunning                      
          {
@@ -266,7 +351,7 @@ WizardTower:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, WizardTowerX, WizardTowerY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\WizardTower.png
       If not KeepCtrljRunning                      
          {
@@ -284,7 +369,7 @@ Temple:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, TempleX, TempleY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Temple.png
       If not KeepCtrljRunning                      
          {
@@ -302,7 +387,7 @@ Bank:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, BankX, BankY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Bank.png
       If not KeepCtrljRunning                      
          {
@@ -320,7 +405,7 @@ Factory:
 Loop 
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, FactoryX, FactoryY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Factory.png
       If not KeepCtrljRunning                      
          {
@@ -355,7 +440,7 @@ Farm:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, FarmX, FarmY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Farm.png
       If not KeepCtrljRunning                      
          {
@@ -373,8 +458,8 @@ Grandma:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60 
-      ImageSearch, GrandmaX, GrandmaY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Grandma.png
+      Sleep 10 
+      ImageSearch, GrandmaX, GrandmaY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Grandma1.png
       If not KeepCtrljRunning                      
          {
             Goto, SaveCounts
@@ -391,7 +476,7 @@ Cursor:
 Loop
    {
       Click 2347, 507, 0 
-      Sleep 60
+      Sleep 10
       ImageSearch, CursorX, CursorY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\Cursor.png
       If not KeepCtrljRunning                      
          {
