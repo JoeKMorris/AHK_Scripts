@@ -1,3 +1,5 @@
+!F1:: ExitApp
+
 #MaxThreadsPerHotkey 3
 !p::               
 #MaxThreadsPerHotkey 1
@@ -12,12 +14,10 @@ KeepCtrljRunning := true
 LoopVariable := 5               ;; Amount of loops before the next upgrade is forced
 TimerVariable := 300            ;; Duration of one loop, in seconds
 
-IniRead, ClickTimer, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, ClickTimer
 IniRead, LoopsSinceUpgrade, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, LoopsSinceUpgrade
 
 IniRead, CursorCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, CursorCount
 IniRead, GrandmaCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, GrandmaCount
-
 IniRead, FarmCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FarmCount
 IniRead, MineCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, MineCount
 IniRead, FactoryCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FactoryCount
@@ -30,36 +30,44 @@ IniRead, PortalCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrade
 IniRead, TimeMachineCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, TimeMachineCount
 IniRead, AntiCondenserCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, AntiCondenserCount
 IniRead, PrismCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, PrismCount
-IniRead, AChanceMakerCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, ChanceMakerCount
-
+IniRead, ChanceMakerCount, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, ChanceMakerCount
+IniRead, %ChanceMakerCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, ChanceMakerCount
+IniRead, %FractalEngineCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FractalEngineCount
+IniRead, %JavaScriptConsoleCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, JavaScriptConsoleCount
+IniRead, %IdleverseCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, IdleverseCount
+IniRead, %CortexBakerCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, CortexBakerCount
 
 AutoClick:
+   StartTime := A_TickCount
+   TimerVariableAdjusted := TimerVariable*1000
+   SetMouseDelay, -1
    Loop
    {  
       PixelGetColor, FirstUpgrade, 2358, 176
-      ImageSearch, GoldX, GoldY, 0, 0, A_ScreenWidth, A_ScreenHeight, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\GoldenCookie.png
-      ImageSearch, WrathX, WrathY, 0, 0, A_ScreenWidth, A_ScreenHeight, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\WrathCookie.png
-      if not KeepCtrljRunning                      ;; break early if the hotkey is pressed
+      ImageSearch, GoldX, GoldY, 14, 135, 2560, 1400, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\GoldenCookie.png
+      ElapsedTime := A_TickCount - StartTime
+
+      ;;ImageSearch, PopupX, PopupY, 0, 0, A_ScreenWidth, A_ScreenHeight, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\WrathCookie.png
+      ;; No longer searching for wrath cookies
+
+      if not KeepCtrljRunning                               ;; break early if the hotkey is pressed
          {
+            SetMouseDelay, 10
             Goto, SaveCounts
          }
-      Else If GoldX > 0                            ;; Searches the screen for golden cookies every second
+      Else If GoldX > 0                                     ;; Searches the screen for golden cookies every second
          {
+            sleep 10
             Click %GoldX%, %GoldY%
          }
-      Else If WrathX > 0                            ;; Searches the screen for golden cookies every second
+      Else if ElapsedTime > %TimerVariableAdjusted%         ;; Defined up top
          {
-            Click %WrathX%, %WrathY%
-         }
-      Else if ClickTimer > %TimerVariable%          ; Defined up top
-         {
-            ClickTimer := 0 
+            SetMouseDelay, 10
             Goto, UpgradeStatus
          }     
       Else 
          {
-            Click 393, 646, 30                     ;; One second of clicks
-            ClickTimer := (ClickTimer+1)
+            Click 393, 646, 100 
          }
    }
 KeepCtrljRunning := false  ; Reset in preparation for the next press of this hotkey.
@@ -67,7 +75,6 @@ return
 
 
 SaveCounts:
-IniWrite, %ClickTimer%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, ClickTimer
 IniWrite, %LoopsSinceUpgrade%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Timers, LoopsSinceUpgrade
 
 IniWrite, %CursorCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, CursorCount
@@ -84,56 +91,58 @@ IniWrite, %PortalCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgr
 IniWrite, %TimeMachineCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, TimeMachineCount
 IniWrite, %AntiCondenserCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, AntiCondenserCount
 IniWrite, %PrismCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, PrismCount
-IniWrite, %AChanceMakerCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, ChanceMakerCount
-Return
+IniWrite, %ChanceMakerCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, ChanceMakerCount
+IniWrite, %FractalEngineCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, FractalEngineCount
+IniWrite, %JavaScriptConsoleCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, JavaScriptConsoleCount
+IniWrite, %IdleverseCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, IdleverseCount
+IniWrite, %CortexBakerCount%, C:\Users\JoeKM\AHK_Scripts\CookieBot\Upgrades.ini, Upgrades, CortexBakerCount
+return
+
 
 UpgradeStatus:
 PixelGetColor, UpgradeStatusTop, 2455, 169   
 PixelGetColor, UpgradeStatusMid, 2455, 219
 PixelGetColor, UpgradeStatusMid2, 2455, 269 
-PixelGetColor, UpgradeStatusBot, 2455, 320
+PixelGetColor, UpgradeStatusBot, 2455, 334
 If (UpgradeStatusTop = 0x6E93BB And UpgradeStatusMid = 0x6E93BB And UpgradeStatusMid2 = 0x6C8DB7 And UpgradeStatusBot = 0x6C8DB7)  ;; 3 rows     
    {
-      FirstUpgradeX := 2358                                                                                      
-      FirstUpgradeY := 277
-      FirstUpgradeColour := "0x89B3D6"
       Goto, ResearchUpgrades
    }
-Else if (UpgradeStatusTop = 0x6E93BB And UpgradeStatusMid = 0x6E93BB And UpgradeStatusMid2 = 0x6C8DB7) ;; 2 rows
-   {
-      FirstUpgradeX := 2358                                                                                      
-      FirstUpgradeY := 225
-      FirstUpgradeColour := "0x8EB7D9"
-      Goto, FirstUpgrade
-   }
-Else ;; one row - don't think this is ever relevant after 1st ascension
-   {
-      FirstUpgradeX := 2358
-      FirstUpgradeY := 320
-      FirstUpgradeColour := "0x89B3D6"
-      Goto, FirstUpgrade
-   }
+Else Goto, FirstUpgrade
+ 
 
 
 ResearchUpgrades:
-PixelGetColor, ResearchUpgrade, 2358, 225
-If ResearchUpgrade = 0x8EB7D9
+Loop
    {
-      ImageSearch, OneMindX, OneMindY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\OneMind.png
-      If OneMindX > 0
+      sleep 200
+      PixelGetColor, ResearchUpgrade, 2358, 225
+      ImageSearch, ElderPledgeX, ElderPledgeY, 2336, 149, 2561, 323, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\ElderPledge.png
+      If ResearchUpgrade = 0x8EB7D9 
          {
-            click 2358, 225
-            Sleep 10 
-            click 1272, 813
-            Goto, FirstUpgrade
+            ImageSearch, OneMindX, OneMindY, 2336, 149, 2561, 323, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\OneMind.png
+            If OneMindX > 0
+               {
+                  click 2358, 225
+                  Sleep 10 
+                  click 1272, 813
+                  Sleep 10
+               }
+            Else
+               {
+                  click 2358, 225
+                  Sleep 10
+               }
          }
-      Else
+      Else If ElderPledgeX > 0
          {
-            click 2358, 225
-            Goto, FirstUpgrade
-         }
-   }   
-Else Goto, FirstUpgrade  
+            click %ElderPledgeX%, %ElderPledgeY%
+            Sleep 200
+            click 2416, 190
+            Sleep 10
+         } 
+      Else Goto, UpgradeStatus  
+   }
 
 
 FirstUpgrade:
@@ -141,31 +150,49 @@ Loop
    {
       Click 2347, 507, 0 
       Sleep 10
-      PixelGetColor, FirstUpgrade, %FirstUpgradeX%, %FirstUpgradeY% 
-      If FirstUpgrade = %FirstUpgradeColour%  
-         {
-            Click %FirstUpgradeX%, %FirstUpgradeY%
+      PixelGetColor, FirstUpgrade, 2358, 240
+      If FirstUpgrade = 0x8EB7D9  
+         { 
+            Click 2450, 230
             UpgradeBoughtThisLoop := 1
          }
       Else                   
          {
-            If UpgradeBoughtThisLoop = 1                               ;; If an upgrade was bought this loop reset the counters and move on 
+            If UpgradeBoughtThisLoop = 1                                ;; If an upgrade was bought this loop reset the counters and move on 
                {
-                UpgradeBoughtThisLoop := 0                   
-                LoopsSinceUpgrade := 0
-                Goto, Idleverse
+                  UpgrElseadeBoughtThisLoop := 0                   
+                  LoopsSinceUpgrade := 0
+                  Goto, CortexBaker
                }
             Else
                {
-                  LoopsSinceUpgrade := (LoopsSinceUpgrade+1)           ;; Counts loops since upgrade
-                  If LoopsSinceUpgrade > %LoopVariable%                ;; Defined up top     
+                  LoopsSinceUpgrade := (LoopsSinceUpgrade+1)             ;; Counts loops since upgrade
+                  If LoopsSinceUpgrade > %LoopVariable%                  ;; Defined up top     
                      {
                         Goto, AutoClick
                      }
-                  Else Goto, Idleverse                         ;; no upgrade this loop, but less than 5 loops, continue buy cycle
+                  Else Goto, CortexBaker                                 ;; no upgrade this loop, but less than 5 loops, continue buy cycle
                }
          }
    }
+
+CortexBaker:
+Loop
+   {
+      Click 2347, 507, 0 
+      Sleep 10
+      ImageSearch, CortexBakerX, CortexBakerY, 2346, 216, 2463, 1395, C:\Users\JoeKM\AHK_Scripts\CookieBot\ImageLibary\CortexBaker.png
+      If not KeepCtrljRunning                      
+         {
+            Goto, SaveCounts
+         }
+      Else If CortexBakerX > 0
+         {
+           Click %CortexBakerX%, %CortexBakerY%
+           CortexBakerCount := (CortexBakerCount+1)
+         }
+      Else Goto, Idleverse
+   } 
 
 Idleverse:
 Loop
